@@ -12,22 +12,87 @@
 :root{
   --bg:#f5f4f0;--bg2:#fff;--border:#e5e3df;
   --text:#1a1a18;--muted:#888;--accent:#3b82f6;
+  --wo-w:520px;
 }
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:13px;overflow:hidden}
-.app{display:grid;grid-template-columns:1fr;grid-template-rows:52px 1fr 84px;height:100vh}
+.app{display:grid;grid-template-columns:1fr;grid-template-rows:52px 1fr;height:100vh}
+.body{position:relative;display:flex;min-height:0;min-width:0}
 
 /* TOPBAR */
-.topbar{background:#1a1a18;color:#f5f4f0;display:flex;align-items:center;gap:14px;padding:0 14px;grid-column:1/-1}
+.topbar{background:#1a1a18;color:#f5f4f0;display:flex;align-items:center;gap:14px;padding:0 14px;position:relative;z-index:1100}
 .topbar-title{font-size:13px;font-weight:700;white-space:nowrap}
 .topbar-sub{font-size:10px;color:#777;white-space:nowrap}
-.metrics{display:flex;gap:2px;margin-left:auto}
+.top-actions{display:flex;align-items:center;gap:10px;margin-left:auto}
+.top-btn{background:#2a2a26;border:1px solid #3a3a36;color:#f5f4f0;border-radius:5px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:inherit}
+.top-btn:hover{background:#333}
+.top-btn.on{background:var(--accent);border-color:var(--accent)}
+.sync-label{display:none;align-items:center;gap:5px;font-size:11px;color:#bbb;cursor:pointer;user-select:none}
+body.compare .sync-label{display:flex}
+.metrics{display:flex;gap:2px}
+body.compare .metrics{display:none}
 .metric{padding:4px 10px;text-align:center;border-radius:4px;min-width:86px}
 .metric .val{font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.2;color:#f5f4f0}
 .metric .lbl{font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:#777;margin-top:1px}
 
+/* COMPARE POPOVER */
+.cmp-box{display:none;position:absolute;top:56px;right:14px;width:270px;background:var(--bg2);color:var(--text);
+  border:1px solid var(--border);border-radius:6px;box-shadow:0 2px 10px rgba(0,0,0,.25);padding:12px;z-index:1200}
+.cmp-box.open{display:block}
+.cmp-box h4{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:8px}
+.cmp-box label{display:block;font-size:11px;color:#555;margin:8px 0 3px}
+.cmp-box select{width:100%;padding:5px;border:1px solid var(--border);border-radius:4px;font-size:12px;font-family:inherit;background:#fff}
+.cmp-actions{display:flex;gap:8px;margin-top:12px}
+.cmp-go,.cmp-exit{flex:1;border-radius:5px;padding:7px;font-size:12px;cursor:pointer;font-family:inherit;border:1px solid var(--border);background:#f5f4f0;color:var(--text)}
+.cmp-go{background:var(--accent);border-color:var(--accent);color:#fff}
+.cmp-exit{display:none}
+body.compare .cmp-exit{display:block}
+
+/* WORK ORDER PANEL */
+.wo-panel{width:var(--wo-w);flex:none;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;
+  min-height:0;overflow:hidden}
+body.wo-collapsed{--wo-w:0px}
+body.wo-collapsed .wo-panel{border-right:none}
+.wo-inner{width:520px;display:flex;flex-direction:column;min-height:0;height:100%}
+.wo-head{padding:9px 12px 6px;display:flex;align-items:baseline;gap:8px;border-bottom:1px solid var(--border)}
+.wo-head b{font-size:12px}
+.wo-count{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.wo-clear{margin-left:auto;background:none;border:1px solid var(--border);border-radius:4px;padding:2px 8px;font-size:10px;cursor:pointer;color:#555;font-family:inherit}
+.wo-clear:hover{background:#f5f4f0}
+.wo-sub{padding:4px 12px;font-size:10px;color:var(--muted);border-bottom:1px solid var(--border)}
+.wo-scroll{flex:1;overflow:auto;min-height:0}
+.wo-table{border-collapse:separate;border-spacing:0;width:100%;font-size:11px;font-variant-numeric:tabular-nums}
+.wo-table th,.wo-table td{padding:4px 6px;text-align:left;white-space:nowrap;border-bottom:1px solid #eee}
+.wo-table thead th{position:sticky;background:#faf9f6;z-index:2}
+.wo-table thead tr.hdr th{top:0;height:26px;cursor:pointer;user-select:none;font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:#666}
+.wo-table thead tr.hdr th:hover{color:var(--text)}
+.wo-table thead tr.flt th{top:26px;padding:3px 4px;vertical-align:top;border-bottom:1px solid var(--border)}
+.wo-table .arrow{display:inline-block;width:10px;color:var(--accent)}
+.wo-table input,.wo-table select{width:100%;font-size:10px;padding:2px 3px;border:1px solid var(--border);border-radius:3px;font-family:inherit;background:#fff;min-width:0}
+.wo-table .stack{display:flex;flex-direction:column;gap:2px}
+.wo-table tbody tr{cursor:pointer}
+.wo-table tbody tr:hover{background:#f0f6ff}
+.wo-table tbody tr.nogeom{cursor:default;color:#aaa}
+.wo-table tbody tr.nogeom:hover{background:none}
+.wo-table td.num{text-align:right}
+.wo-empty{padding:16px;color:var(--muted);font-size:11px}
+.wo-toggle{position:absolute;top:50%;left:var(--wo-w);transform:translateY(-50%);z-index:1000;width:18px;height:56px;
+  background:var(--bg2);border:1px solid var(--border);border-left:none;border-radius:0 6px 6px 0;cursor:pointer;
+  font-size:11px;color:#555;display:flex;align-items:center;justify-content:center;box-shadow:1px 1px 4px rgba(0,0,0,.12)}
+.wo-toggle:hover{background:#f5f4f0}
+
+/* VIEWS */
+.views{flex:1;display:flex;min-width:0;min-height:0}
+.view{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0}
+.view + .view{border-left:3px solid #1a1a18}
+.view-head{display:none;background:#2a2a26;color:#f5f4f0;align-items:center;gap:10px;padding:5px 12px;font-size:12px}
+body.compare .view-head{display:flex}
+.view-tag{background:var(--accent);color:#fff;border-radius:3px;font-weight:700;font-size:11px;padding:1px 7px}
+.view-stat{font-variant-numeric:tabular-nums}
+.view-head .view-month{font-weight:700}
+
 /* MAP */
-.map-wrap{position:relative;overflow:hidden}
-#map{width:100%;height:100%;background:#eee}
+.map-wrap{position:relative;overflow:hidden;flex:1;min-height:0}
+.map{width:100%;height:100%;background:#eee}
 
 .panel{position:absolute;background:var(--bg2);border:1px solid var(--border);border-radius:6px;
   box-shadow:0 1px 4px rgba(0,0,0,.12);font-size:11px;z-index:500}
@@ -39,13 +104,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .legend-hint{margin-top:6px;padding-top:6px;border-top:1px solid var(--border);color:var(--muted);font-size:10px;line-height:1.4}
 
 .confidence-note{bottom:10px;left:10px;padding:6px 9px;color:var(--muted);font-size:10px;max-width:260px;line-height:1.4}
+.reset-btn{position:absolute;top:10px;right:10px;z-index:900;background:var(--bg2);border:1px solid var(--border);border-radius:5px;
+  padding:5px 10px;font-size:11px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.12);font-family:inherit;color:var(--text)}
+.reset-btn:hover{background:#f5f4f0}
 
 /* BOTTOM BAR */
-.bottombar{background:#1a1a18;color:#f5f4f0;grid-column:1/-1;display:flex;align-items:center;gap:14px;padding:0 16px}
+.bottombar{background:#1a1a18;color:#f5f4f0;display:flex;align-items:center;gap:14px;padding:0 16px;height:84px;flex:none}
 .play-btn{background:#2a2a26;border:1px solid #3a3a36;color:#f5f4f0;border-radius:5px;width:34px;height:34px;
   font-size:13px;cursor:pointer;flex:none;display:flex;align-items:center;justify-content:center}
 .play-btn:hover{background:#333}
-.slider-wrap{flex:1;display:flex;flex-direction:column;gap:2px}
+.slider-wrap{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
 .slider-wrap input[type=range]{width:100%;accent-color:var(--accent)}
 .month-label{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;min-width:74px;text-align:right}
 .tick-labels{display:flex;justify-content:space-between;font-size:9px;color:#777}
@@ -68,31 +136,48 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="topbar-title">CTA Slow Zones, 2012-2026*</div>
       <div class="topbar-sub">*Reliable data since 2014, intermittent data availability since 2004 &mdash; from FOIA 2024-0791 &amp; R2954, not a live tracker</div>
     </div>
-    <div class="metrics">
-      <div class="metric"><div class="val" id="m-active">0</div><div class="lbl" id="m-active-lbl">Active</div></div>
+    <div class="top-actions">
+      <label class="sync-label"><input type="checkbox" id="sync-chk" checked> Sync pan/zoom</label>
+      <button class="top-btn" id="cmp-btn">Compare months</button>
+      <div class="metrics">
+        <div class="metric"><div class="val" id="m-active">0</div><div class="lbl" id="m-active-lbl">Active</div></div>
+      </div>
+    </div>
+    <div class="cmp-box" id="cmp-box">
+      <h4>Compare two months</h4>
+      <label for="cmp-a">Left window</label>
+      <select id="cmp-a"></select>
+      <label for="cmp-b">Right window</label>
+      <select id="cmp-b"></select>
+      <div class="cmp-actions">
+        <button class="cmp-go" id="cmp-go">Compare</button>
+        <button class="cmp-exit" id="cmp-exit">Exit compare</button>
+      </div>
     </div>
   </div>
 
-  <div class="map-wrap">
-    <div id="map"></div>
-    <div class="panel legend">
-      <div class="legend-title">Cause</div>
-      <div id="legend-rows"></div>
-      <div class="legend-hint">Line weight scales with how long the slow zone was active. Click a line for details.</div>
+  <div class="body">
+    <div class="wo-panel" id="wo-panel">
+      <div class="wo-inner">
+        <div class="wo-head">
+          <b>Active work orders</b>
+          <span class="wo-count" id="wo-count"></span>
+          <button class="wo-clear" id="wo-clear">Clear filters</button>
+        </div>
+        <div class="wo-sub" id="wo-sub"></div>
+        <div class="wo-scroll">
+          <table class="wo-table">
+            <thead>
+              <tr class="hdr" id="wo-hdr"></tr>
+              <tr class="flt" id="wo-flt"></tr>
+            </thead>
+            <tbody id="wo-body"></tbody>
+          </table>
+        </div>
+      </div>
     </div>
-    <div class="panel confidence-note">
-      Track placement is exact for most segments. Where the source data only identifies a branch and direction (not
-      which parallel track), the line is placed on the best-match track for that corridor.
-    </div>
-  </div>
-
-  <div class="bottombar">
-    <button class="play-btn" id="play-btn" title="Play">&#9654;</button>
-    <div class="slider-wrap">
-      <input type="range" id="month-slider" min="0" max="0" step="1" value="0">
-      <div class="tick-labels"><span id="tick-start"></span><span id="tick-end"></span></div>
-    </div>
-    <div class="month-label" id="month-label">-</div>
+    <button class="wo-toggle" id="wo-toggle" title="Collapse work order panel">&lsaquo;</button>
+    <div class="views" id="views"></div>
   </div>
 </div>
 
@@ -101,51 +186,21 @@ const META = window.SZ_META;
 const LINES = window.SZ_LINES;
 const SEGMENTS = window.SZ_SEGMENTS;
 
+const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 function monthLabel(idx){
   const [ey, em] = META.month_epoch.split('-').map(Number);
   const total = (ey*12 + (em-1)) + idx;
   const y = Math.floor(total/12), m = total%12;
-  const names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  return names[m] + ' ' + y;
+  return MONTH_NAMES[m] + ' ' + y;
 }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-const map = L.map('map', {zoomControl:true}).setView([41.88,-87.68], 10);
-L.tileLayer('https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png?key=cb1_2y7m_1_548aa4aac63350462978d1a1', {
-  attribution: '&copy; OpenStreetMap, &copy; CARTO', maxZoom: 19
-}).addTo(map);
-
-// Basemap: full system, always visible.
-const basemapLayer = L.geoJSON(LINES, {
-  style: f => ({
-    color: f.properties.is_connector ? '#c8c6c0' : '#a8a6a0',
-    weight: f.properties.is_connector ? 1.5 : 2.5,
-    opacity: f.properties.is_connector ? 0.5 : 0.8,
-  })
-}).addTo(map);
-try { map.fitBounds(basemapLayer.getBounds(), {padding:[20,20]}); } catch(e) {}
-
-// Pre-build every segment's polyline once; add/remove from the map as the
-// slider/filters change rather than recreating geometry every frame.
-const polylines = new Array(SEGMENTS.length).fill(null);
-SEGMENTS.forEach((seg, i) => {
-  if (!seg.geom_ok || !seg.geom || seg.geom.length < 2) return;
-  const duration = seg.end - seg.start + 1;
-  const weight = Math.max(3, Math.min(10, 3 + duration/12));
-  const latlngs = seg.geom.map(([lon,lat]) => [lat,lon]);
-  const pl = L.polyline(latlngs, {
-    color: META.category_colors[seg.cat],
-    weight: weight,
-    opacity: 0.85,
-    lineCap: 'round',
-  });
-  pl.on('click', e => {
-    L.DomEvent.stopPropagation(e);
-    const stack = [i, ...(overlapGroups[i] || [])].filter(j => activeSet.has(j));
-    stack.sort((a, b) => SEGMENTS[a].start - SEGMENTS[b].start);
-    openStack(stack, i, e.latlng);
-  });
-  polylines[i] = pl;
-});
+// Timeline is cropped to Jan 2014 onward (reliable-data start) even though
+// month_index (and any segment's start/end) is still computed from the full
+// 2004 epoch -- a segment that started earlier but is still active past the
+// crop point renders normally, only the scrub range is shortened.
+const TIMELINE_START_IDX = (2014 - 2004) * 12;
+const CUTOFF_IDX = META.month_count - 1;
 
 // Segments sharing the same branch+track with overlapping stationing are
 // the "same physical spot" -- e.g. repeat work orders reported against the
@@ -196,131 +251,509 @@ function popupHtml(seg){
   );
 }
 
-// --- Click-to-inspect: tab through stacked WOs at the same spot, and
-// highlight + zoom to whichever one is currently selected. ---
-let highlightLayer = null;
-let stackPopup = null;
+// ---------------------------------------------------------------------------
+// View: one map + legend + slider. One instance in single mode, two in
+// compare mode. Polylines are created lazily per view (a Leaflet layer can
+// only live on one map).
+// ---------------------------------------------------------------------------
+let views = [];
+let syncOn = true;
+let syncLock = false;
+let lastSingleMonth = CUTOFF_IDX;
 
-function clearHighlight(){
-  if (highlightLayer) { map.removeLayer(highlightLayer); highlightLayer = null; }
-}
+function createView(container, opts){
+  const tag = opts.tag || null;
+  container.insertAdjacentHTML('beforeend',
+    '<div class="view">' +
+      '<div class="view-head"><span class="view-tag">' + (tag || '') + '</span>' +
+        '<span class="view-month"></span><span class="view-stat"></span></div>' +
+      '<div class="map-wrap">' +
+        '<div class="map"></div>' +
+        '<button class="reset-btn" title="Reset zoom to the full system">Reset zoom</button>' +
+        '<div class="panel legend">' +
+          '<div class="legend-title">Cause</div>' +
+          '<div class="legend-rows"></div>' +
+          '<div class="legend-hint">Line weight scales with how long the slow zone was active. Click a line for details.</div>' +
+        '</div>' +
+        '<div class="panel confidence-note">' +
+          'Track placement is exact for most segments. Where the source data only identifies a branch and direction (not ' +
+          'which parallel track), the line is placed on the best-match track for that corridor.' +
+        '</div>' +
+      '</div>' +
+      '<div class="bottombar">' +
+        '<button class="play-btn" title="Play">&#9654;</button>' +
+        '<div class="slider-wrap">' +
+          '<input type="range" class="month-slider" min="0" max="0" step="1" value="0">' +
+          '<div class="tick-labels"><span class="tick-start"></span><span class="tick-end"></span></div>' +
+        '</div>' +
+        '<div class="month-label">-</div>' +
+      '</div>' +
+    '</div>');
+  const root = container.lastElementChild;
+  const q = sel => root.querySelector(sel);
 
-function highlightAndZoom(i){
-  clearHighlight();
-  const pl = polylines[i];
-  if (!pl) return;
-  highlightLayer = L.polyline(pl.getLatLngs(), {
-    color: '#111', weight: pl.options.weight + 8, opacity: 0.25, lineCap: 'round',
+  const map = L.map(q('.map'), {zoomControl:true}).setView([41.88,-87.68], 10);
+  L.tileLayer('https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png?key=cb1_2y7m_1_548aa4aac63350462978d1a1', {
+    attribution: '&copy; OpenStreetMap, &copy; CARTO', maxZoom: 19
   }).addTo(map);
-  highlightLayer.bringToBack();
-  basemapLayer.bringToBack();
-  pl.bringToFront();
-  map.fitBounds(pl.getBounds(), {padding: [60, 60], maxZoom: 17});
-}
 
-function openStack(members, selectedIdx, latlng){
-  if (members.length === 0) return;
-  const tabsHtml = members.length > 1
-    ? '<div class="pop-tabs">' + members.map(idx =>
-        '<button class="pop-tab' + (idx === selectedIdx ? ' active' : '') + '" data-idx="' + idx + '">WO ' +
-        (SEGMENTS[idx].infor_wo || SEGMENTS[idx].wo) + '</button>'
-      ).join('') + '</div>'
-    : '';
-  const html = '<div class="pop-wrap">' + tabsHtml + '<div class="pop-body">' + popupHtml(SEGMENTS[selectedIdx]) + '</div></div>';
-  if (!stackPopup) {
-    stackPopup = L.popup({maxWidth: 280, autoPanPadding: [40, 40]});
-    map.on('popupclose', e => { if (e.popup === stackPopup) clearHighlight(); });
+  // Basemap: full system, always visible.
+  const basemapLayer = L.geoJSON(LINES, {
+    style: f => ({
+      color: f.properties.is_connector ? '#c8c6c0' : '#a8a6a0',
+      weight: f.properties.is_connector ? 1.5 : 2.5,
+      opacity: f.properties.is_connector ? 0.5 : 0.8,
+    })
+  }).addTo(map);
+  let fullBounds = null;
+  try { fullBounds = basemapLayer.getBounds(); } catch(e) {}
+  function resetZoom(){
+    if (fullBounds) map.fitBounds(fullBounds, {padding:[20,20]});
   }
-  stackPopup.setLatLng(latlng).setContent(html).openOn(map);
-  highlightAndZoom(selectedIdx);
-  setTimeout(() => {
-    const container = stackPopup.getElement();
-    if (!container) return;
-    container.querySelectorAll('.pop-tab').forEach(btn => {
-      btn.addEventListener('click', ev => {
-        ev.stopPropagation();
-        openStack(members, Number(btn.dataset.idx), latlng);
-      });
-    });
-  }, 0);
-}
+  resetZoom();
+  q('.reset-btn').addEventListener('click', resetZoom);
 
-// --- Category filter state ---
-const activeCats = new Set(META.categories.map((_, i) => i));
-const legendRows = document.getElementById('legend-rows');
-META.categories.forEach((cat, i) => {
-  const row = document.createElement('label');
-  row.className = 'legend-row';
-  row.innerHTML = '<input type="checkbox" checked data-cat="' + i + '">' +
-    '<span class="swatch" style="background:' + META.category_colors[i] + '"></span>' + cat;
-  legendRows.appendChild(row);
-});
-legendRows.addEventListener('change', e => {
-  const cat = Number(e.target.dataset.cat);
-  if (e.target.checked) activeCats.add(cat); else activeCats.delete(cat);
-  render();
-});
+  const view = { map, root, tag, resetZoom };
 
-// --- Slider / month state, diff-based add/remove ---
-// Timeline is cropped to Jan 2014 onward (reliable-data start) even though
-// month_index (and any segment's start/end) is still computed from the full
-// 2004 epoch -- a segment that started earlier but is still active past the
-// crop point renders normally, only the scrub range is shortened.
-const TIMELINE_START_IDX = (2014 - 2004) * 12;
-const slider = document.getElementById('month-slider');
-slider.min = TIMELINE_START_IDX;
-slider.max = META.month_count - 1;
-slider.value = META.month_count - 1;
-document.getElementById('tick-start').textContent = monthLabel(TIMELINE_START_IDX);
-document.getElementById('tick-end').textContent = monthLabel(META.month_count - 1);
+  // Pan/zoom sync between the two compare windows.
+  map.on('move', () => {
+    if (!syncOn || syncLock || views.length !== 2) return;
+    const other = views.find(v => v !== view);
+    if (!other) return;
+    syncLock = true;
+    other.map.setView(map.getCenter(), map.getZoom(), {animate:false});
+    syncLock = false;
+  });
 
-let activeSet = new Set();
-let pending = false;
-
-function render(){
-  const m = Number(slider.value);
-  document.getElementById('month-label').textContent = monthLabel(m);
-  document.getElementById('m-active-lbl').textContent = 'Active (as of ' + monthLabel(m) + ')';
-
-  const newActive = new Set();
-  for (let i = 0; i < SEGMENTS.length; i++) {
+  // Pre-built polylines (lazy), added/removed as slider/filters change.
+  const polylines = new Array(SEGMENTS.length).fill(null);
+  function getPolyline(i){
+    if (polylines[i]) return polylines[i];
     const seg = SEGMENTS[i];
-    if (!polylines[i]) continue;
-    if (seg.start <= m && m <= seg.end && activeCats.has(seg.cat)) newActive.add(i);
+    if (!seg.geom_ok || !seg.geom || seg.geom.length < 2) return null;
+    const duration = seg.end - seg.start + 1;
+    const weight = Math.max(3, Math.min(10, 3 + duration/12));
+    const pl = L.polyline(seg.geom.map(([lon,lat]) => [lat,lon]), {
+      color: META.category_colors[seg.cat],
+      weight: weight,
+      opacity: 0.85,
+      lineCap: 'round',
+    });
+    pl.on('click', e => {
+      L.DomEvent.stopPropagation(e);
+      const stack = [i, ...(overlapGroups[i] || [])].filter(j => activeSet.has(j));
+      stack.sort((a, b) => SEGMENTS[a].start - SEGMENTS[b].start);
+      openStack(stack, i, e.latlng);
+    });
+    polylines[i] = pl;
+    return pl;
   }
-  for (const i of activeSet) if (!newActive.has(i)) map.removeLayer(polylines[i]);
-  for (const i of newActive) if (!activeSet.has(i)) polylines[i].addTo(map);
-  activeSet = newActive;
-  document.getElementById('m-active').textContent = activeSet.size.toLocaleString();
+
+  // --- Click-to-inspect: tab through stacked WOs at the same spot, and
+  // highlight + zoom to whichever one is currently selected. ---
+  let highlightLayer = null;
+  let stackPopup = null;
+
+  function clearHighlight(){
+    if (highlightLayer) { map.removeLayer(highlightLayer); highlightLayer = null; }
+  }
+
+  function highlightAndZoom(i){
+    clearHighlight();
+    const pl = getPolyline(i);
+    if (!pl) return;
+    highlightLayer = L.polyline(pl.getLatLngs(), {
+      color: '#111', weight: pl.options.weight + 8, opacity: 0.25, lineCap: 'round',
+    }).addTo(map);
+    highlightLayer.bringToBack();
+    basemapLayer.bringToBack();
+    pl.bringToFront();
+    map.fitBounds(pl.getBounds(), {padding: [60, 60], maxZoom: 17});
+  }
+
+  function openStack(members, selectedIdx, latlng){
+    if (members.length === 0) return;
+    const tabsHtml = members.length > 1
+      ? '<div class="pop-tabs">' + members.map(idx =>
+          '<button class="pop-tab' + (idx === selectedIdx ? ' active' : '') + '" data-idx="' + idx + '">WO ' +
+          (SEGMENTS[idx].infor_wo || SEGMENTS[idx].wo) + '</button>'
+        ).join('') + '</div>'
+      : '';
+    const html = '<div class="pop-wrap">' + tabsHtml + '<div class="pop-body">' + popupHtml(SEGMENTS[selectedIdx]) + '</div></div>';
+    if (!stackPopup) {
+      stackPopup = L.popup({maxWidth: 280, autoPanPadding: [40, 40]});
+      map.on('popupclose', e => { if (e.popup === stackPopup) clearHighlight(); });
+    }
+    stackPopup.setLatLng(latlng).setContent(html).openOn(map);
+    highlightAndZoom(selectedIdx);
+    setTimeout(() => {
+      const el = stackPopup.getElement();
+      if (!el) return;
+      el.querySelectorAll('.pop-tab').forEach(btn => {
+        btn.addEventListener('click', ev => {
+          ev.stopPropagation();
+          openStack(members, Number(btn.dataset.idx), latlng);
+        });
+      });
+    }, 0);
+  }
+
+  // --- Category filter state ---
+  const activeCats = new Set(META.categories.map((_, i) => i));
+  const legendRows = q('.legend-rows');
+  META.categories.forEach((cat, i) => {
+    const row = document.createElement('label');
+    row.className = 'legend-row';
+    row.innerHTML = '<input type="checkbox" checked data-cat="' + i + '">' +
+      '<span class="swatch" style="background:' + META.category_colors[i] + '"></span>' + cat;
+    legendRows.appendChild(row);
+  });
+  legendRows.addEventListener('change', e => {
+    const cat = Number(e.target.dataset.cat);
+    if (e.target.checked) activeCats.add(cat); else activeCats.delete(cat);
+    render();
+  });
+
+  // --- Slider / month state, diff-based add/remove ---
+  const slider = q('.month-slider');
+  slider.min = TIMELINE_START_IDX;
+  slider.max = CUTOFF_IDX;
+  slider.value = opts.month;
+  q('.tick-start').textContent = monthLabel(TIMELINE_START_IDX);
+  q('.tick-end').textContent = monthLabel(CUTOFF_IDX);
+
+  let activeSet = new Set();
+  let pending = false;
+  let destroyed = false;
+
+  function render(){
+    if (destroyed) return;
+    const m = Number(slider.value);
+    q('.month-label').textContent = monthLabel(m);
+    q('.view-month').textContent = monthLabel(m);
+
+    const newActive = new Set();
+    for (let i = 0; i < SEGMENTS.length; i++) {
+      const seg = SEGMENTS[i];
+      if (!seg.geom_ok || !seg.geom || seg.geom.length < 2) continue;
+      if (seg.start <= m && m <= seg.end && activeCats.has(seg.cat)) newActive.add(i);
+    }
+    for (const i of activeSet) if (!newActive.has(i)) map.removeLayer(polylines[i]);
+    for (const i of newActive) {
+      if (activeSet.has(i)) continue;
+      const pl = getPolyline(i);
+      if (pl) pl.addTo(map);
+    }
+    activeSet = newActive;
+    const statText = 'Active (as of ' + monthLabel(m) + '): ' + activeSet.size.toLocaleString();
+    q('.view-stat').textContent = statText;
+    if (!tag) {
+      lastSingleMonth = m;
+      document.getElementById('m-active-lbl').textContent = 'Active (as of ' + monthLabel(m) + ')';
+      document.getElementById('m-active').textContent = activeSet.size.toLocaleString();
+    }
+  }
+  function scheduleRender(){
+    if (pending) return;
+    pending = true;
+    requestAnimationFrame(() => { pending = false; render(); });
+  }
+  slider.addEventListener('input', scheduleRender);
+
+  // --- Play / auto-advance ---
+  let playTimer = null;
+  const playBtn = q('.play-btn');
+  playBtn.addEventListener('click', () => {
+    if (playTimer) {
+      clearInterval(playTimer);
+      playTimer = null;
+      playBtn.innerHTML = '&#9654;';
+      return;
+    }
+    playBtn.innerHTML = '&#10074;&#10074;';
+    playTimer = setInterval(() => {
+      let m = Number(slider.value) + 1;
+      if (m > Number(slider.max)) m = TIMELINE_START_IDX;
+      slider.value = m;
+      scheduleRender();
+    }, 220);
+  });
+
+  view.setMonth = m => { slider.value = m; render(); };
+  view.getMonth = () => Number(slider.value);
+  view.isActive = i => activeSet.has(i);
+  // Row click from the work-order panel: zoom to the segment; open its popup
+  // when it is drawn in this window's month, otherwise just zoom.
+  view.focusSegment = i => {
+    const pl = getPolyline(i);
+    if (!pl) return;
+    if (activeSet.has(i)) {
+      const stack = [i, ...(overlapGroups[i] || [])].filter(j => activeSet.has(j));
+      stack.sort((a, b) => SEGMENTS[a].start - SEGMENTS[b].start);
+      openStack(stack, i, pl.getBounds().getCenter());
+    } else {
+      map.fitBounds(pl.getBounds(), {padding: [60, 60], maxZoom: 17});
+    }
+  };
+  view.destroy = () => {
+    destroyed = true;
+    if (playTimer) clearInterval(playTimer);
+    map.remove();
+    root.remove();
+  };
+
+  render();
+  return view;
 }
 
-function scheduleRender(){
-  if (pending) return;
-  pending = true;
-  requestAnimationFrame(() => { pending = false; render(); });
+// ---------------------------------------------------------------------------
+// Mode control: single view <-> two-window compare
+// ---------------------------------------------------------------------------
+const viewsEl = document.getElementById('views');
+const cmpBox = document.getElementById('cmp-box');
+const cmpBtn = document.getElementById('cmp-btn');
+const cmpA = document.getElementById('cmp-a');
+const cmpB = document.getElementById('cmp-b');
+let mode = 'single';
+
+for (let m = TIMELINE_START_IDX; m <= CUTOFF_IDX; m++) {
+  for (const sel of [cmpA, cmpB]) {
+    const o = document.createElement('option');
+    o.value = m; o.textContent = monthLabel(m);
+    sel.appendChild(o);
+  }
 }
 
-slider.addEventListener('input', scheduleRender);
-render();
-
-// --- Play / auto-advance ---
-let playTimer = null;
-const playBtn = document.getElementById('play-btn');
-playBtn.addEventListener('click', () => {
-  if (playTimer) {
-    clearInterval(playTimer);
-    playTimer = null;
-    playBtn.innerHTML = '&#9654;';
+function destroyViews(){
+  views.forEach(v => v.destroy());
+  views = [];
+}
+function enterSingle(){
+  const m = lastSingleMonth;
+  destroyViews();
+  mode = 'single';
+  document.body.classList.remove('compare');
+  cmpBtn.classList.remove('on');
+  views = [createView(viewsEl, {month: m})];
+}
+function enterCompare(mA, mB){
+  if (mode === 'compare') {
+    views[0].setMonth(mA);
+    views[1].setMonth(mB);
     return;
   }
-  playBtn.innerHTML = '&#10074;&#10074;';
-  playTimer = setInterval(() => {
-    let m = Number(slider.value) + 1;
-    if (m > Number(slider.max)) m = TIMELINE_START_IDX;
-    slider.value = m;
-    scheduleRender();
-  }, 220);
+  destroyViews();
+  mode = 'compare';
+  document.body.classList.add('compare');
+  cmpBtn.classList.add('on');
+  const a = createView(viewsEl, {month: mA, tag: 'A'});
+  const b = createView(viewsEl, {month: mB, tag: 'B'});
+  views = [a, b];
+  // Both windows now have their final size; fit each, then lock them together.
+  a.map.invalidateSize(); b.map.invalidateSize();
+  a.resetZoom();
+}
+
+cmpBtn.addEventListener('click', () => {
+  if (!cmpBox.classList.contains('open')) {
+    // Seed the pickers: current month vs the data cutoff, or a year back from the cutoff.
+    if (mode === 'compare') {
+      cmpA.value = views[0].getMonth(); cmpB.value = views[1].getMonth();
+    } else {
+      const cur = lastSingleMonth;
+      cmpA.value = cur < CUTOFF_IDX ? cur : Math.max(TIMELINE_START_IDX, CUTOFF_IDX - 12);
+      cmpB.value = CUTOFF_IDX;
+    }
+  }
+  cmpBox.classList.toggle('open');
 });
+document.getElementById('cmp-go').addEventListener('click', () => {
+  enterCompare(Number(cmpA.value), Number(cmpB.value));
+  cmpBox.classList.remove('open');
+});
+document.getElementById('cmp-exit').addEventListener('click', () => {
+  cmpBox.classList.remove('open');
+  enterSingle();
+});
+document.addEventListener('mousedown', e => {
+  if (cmpBox.classList.contains('open') && !cmpBox.contains(e.target) && e.target !== cmpBtn) cmpBox.classList.remove('open');
+});
+document.getElementById('sync-chk').addEventListener('change', e => {
+  syncOn = e.target.checked;
+  if (syncOn && views.length === 2) {
+    syncLock = true;
+    views[1].map.setView(views[0].map.getCenter(), views[0].map.getZoom(), {animate:false});
+    syncLock = false;
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Work-order panel: every WO active at the data cutoff, sortable + filterable
+// ---------------------------------------------------------------------------
+const woRows = [];
+SEGMENTS.forEach((seg, i) => {
+  if (!(seg.start <= CUTOFF_IDX && CUTOFF_IDX <= seg.end)) return;
+  woRows.push({
+    i,
+    wo: String(seg.infor_wo || seg.wo || ''),
+    woSearch: [seg.infor_wo, seg.wo, seg.parent_wo].filter(v => v != null && v !== '').join(' '),
+    branch: META.branch_names[seg.br] || seg.br,
+    track: seg.tr == null ? null : String(seg.tr),
+    status: seg.sz_status || null,
+    created: seg.created || null,
+    ended: seg.ended || null,
+    len: seg.len_ft == null || seg.len_ft === '' ? null : Number(seg.len_ft),
+    geom: !!seg.geom_ok,
+  });
+});
+
+const BLANK = '__blank__';
+const WO_COLS = [
+  {k:'wo',      label:'WO#',         type:'text'},
+  {k:'branch',  label:'Branch',      type:'select'},
+  {k:'track',   label:'Track',       type:'select'},
+  {k:'status',  label:'Status',      type:'select'},
+  {k:'created', label:'Created',     type:'date'},
+  {k:'ended',   label:'End',         type:'date'},
+  {k:'len',     label:'Length (ft)', type:'num'},
+];
+const woFilter = {};
+let woSort = {k:'created', dir:-1};
+
+const woHdr = document.getElementById('wo-hdr');
+const woFlt = document.getElementById('wo-flt');
+const woBody = document.getElementById('wo-body');
+
+function woWoNum(s){ const n = parseInt(s, 10); return isNaN(n) ? null : n; }
+
+function buildWoHeader(){
+  WO_COLS.forEach(c => {
+    const th = document.createElement('th');
+    th.dataset.k = c.k;
+    th.innerHTML = esc(c.label) + ' <span class="arrow"></span>';
+    th.addEventListener('click', () => {
+      woSort = woSort.k === c.k ? {k:c.k, dir:-woSort.dir} : {k:c.k, dir:1};
+      renderWoTable();
+    });
+    woHdr.appendChild(th);
+
+    const fh = document.createElement('th');
+    if (c.type === 'text') {
+      fh.innerHTML = '<input type="text" data-f="' + c.k + '" placeholder="search">';
+    } else if (c.type === 'select') {
+      const vals = new Set(); let hasBlank = false;
+      woRows.forEach(r => { if (r[c.k] == null) hasBlank = true; else vals.add(r[c.k]); });
+      const sorted = [...vals].sort((a, b) => String(a).localeCompare(String(b), undefined, {numeric:true}));
+      fh.innerHTML = '<select data-f="' + c.k + '"><option value="">All</option>' +
+        sorted.map(v => '<option value="' + esc(v) + '">' + esc(v) + '</option>').join('') +
+        (hasBlank ? '<option value="' + BLANK + '">(blank)</option>' : '') + '</select>';
+    } else if (c.type === 'date') {
+      fh.innerHTML = '<div class="stack"><input type="date" data-f="' + c.k + '-from" title="From"><input type="date" data-f="' + c.k + '-to" title="To"></div>';
+    } else if (c.type === 'num') {
+      fh.innerHTML = '<div class="stack"><input type="number" data-f="' + c.k + '-from" placeholder="min"><input type="number" data-f="' + c.k + '-to" placeholder="max"></div>';
+    }
+    woFlt.appendChild(fh);
+  });
+  woFlt.addEventListener('input', onWoFilter);
+  woFlt.addEventListener('change', onWoFilter);
+}
+function onWoFilter(e){
+  const f = e.target.dataset.f;
+  if (!f) return;
+  woFilter[f] = e.target.value;
+  renderWoTable();
+}
+
+function woPasses(r){
+  for (const c of WO_COLS) {
+    if (c.type === 'text') {
+      const v = (woFilter[c.k] || '').trim().toLowerCase();
+      if (v && !r.woSearch.toLowerCase().includes(v)) return false;
+    } else if (c.type === 'select') {
+      const v = woFilter[c.k];
+      if (!v) continue;
+      if (v === BLANK ? r[c.k] != null : r[c.k] !== v) return false;
+    } else {
+      const lo = woFilter[c.k + '-from'], hi = woFilter[c.k + '-to'];
+      if (!lo && !hi) continue;
+      const val = r[c.k];
+      if (val == null) return false;
+      if (c.type === 'num') {
+        if (lo !== '' && lo != null && val < Number(lo)) return false;
+        if (hi !== '' && hi != null && val > Number(hi)) return false;
+      } else {
+        if (lo && val < lo) return false;
+        if (hi && val > hi) return false;
+      }
+    }
+  }
+  return true;
+}
+
+function renderWoTable(){
+  const rows = woRows.filter(woPasses);
+  const k = woSort.k, dir = woSort.dir;
+  rows.sort((a, b) => {
+    let va = a[k], vb = b[k];
+    if (k === 'wo') { va = woWoNum(va); vb = woWoNum(vb); }
+    if (va == null && vb == null) return 0;
+    if (va == null) return 1;      // blanks always last
+    if (vb == null) return -1;
+    if (typeof va === 'number') return (va - vb) * dir;
+    return String(va).localeCompare(String(vb), undefined, {numeric:true}) * dir;
+  });
+  woHdr.querySelectorAll('th').forEach(th => {
+    th.querySelector('.arrow').innerHTML = th.dataset.k === k ? (dir === 1 ? '&uarr;' : '&darr;') : '';
+  });
+  document.getElementById('wo-count').textContent =
+    rows.length.toLocaleString() + (rows.length === woRows.length ? '' : ' of ' + woRows.length.toLocaleString());
+  if (!rows.length) {
+    woBody.innerHTML = '<tr><td colspan="' + WO_COLS.length + '" class="wo-empty">No work orders match these filters.</td></tr>';
+    return;
+  }
+  woBody.innerHTML = rows.map(r =>
+    '<tr data-i="' + r.i + '"' + (r.geom ? '' : ' class="nogeom" title="No map geometry for this work order"') + '>' +
+      '<td>' + esc(r.wo) + '</td>' +
+      '<td>' + esc(r.branch) + '</td>' +
+      '<td>' + (r.track == null ? '' : esc(r.track)) + '</td>' +
+      '<td>' + (r.status == null ? '' : esc(r.status)) + '</td>' +
+      '<td>' + (r.created || '') + '</td>' +
+      '<td>' + (r.ended || '') + '</td>' +
+      '<td class="num">' + (r.len == null ? '' : r.len.toLocaleString()) + '</td>' +
+    '</tr>').join('');
+}
+
+woBody.addEventListener('click', e => {
+  const tr = e.target.closest('tr[data-i]');
+  if (!tr || tr.classList.contains('nogeom')) return;
+  const i = Number(tr.dataset.i);
+  // Single view: if the segment isn't drawn at the slider's month, jump to the
+  // data cutoff (the month this panel describes) so the click shows something.
+  if (mode === 'single' && !views[0].isActive(i)) views[0].setMonth(CUTOFF_IDX);
+  views.forEach(v => v.focusSegment(i));
+});
+
+document.getElementById('wo-clear').addEventListener('click', () => {
+  for (const key of Object.keys(woFilter)) delete woFilter[key];
+  woFlt.querySelectorAll('input,select').forEach(el => { el.value = ''; });
+  renderWoTable();
+});
+
+document.getElementById('wo-toggle').addEventListener('click', () => {
+  const collapsed = document.body.classList.toggle('wo-collapsed');
+  const btn = document.getElementById('wo-toggle');
+  btn.innerHTML = collapsed ? '&rsaquo;' : '&lsaquo;';
+  btn.title = collapsed ? 'Expand work order panel' : 'Collapse work order panel';
+  views.forEach(v => v.map.invalidateSize());
+});
+
+document.getElementById('wo-sub').textContent =
+  'Active as of ' + monthLabel(CUTOFF_IDX) + ' (data cutoff). Click a header to sort; filter under each header.';
+buildWoHeader();
+renderWoTable();
+
+// --- Boot ---
+enterSingle();
 </script>
 </body>
 </html>
