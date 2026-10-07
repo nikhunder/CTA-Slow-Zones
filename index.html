@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CTA Slow Zones, 2012-2026*</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="slowzones_data.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f4f0;--bg2:#fff;--border:#e5e3df;
+  --text:#1a1a18;--muted:#888;--accent:#3b82f6;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:13px;overflow:hidden}
+.app{display:grid;grid-template-columns:1fr;grid-template-rows:52px 1fr 84px;height:100vh}
+
+/* TOPBAR */
+.topbar{background:#1a1a18;color:#f5f4f0;display:flex;align-items:center;gap:14px;padding:0 14px;grid-column:1/-1}
+.topbar-title{font-size:13px;font-weight:700;white-space:nowrap}
+.topbar-sub{font-size:10px;color:#777;white-space:nowrap}
+.metrics{display:flex;gap:2px;margin-left:auto}
+.metric{padding:4px 10px;text-align:center;border-radius:4px;min-width:86px}
+.metric .val{font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.2;color:#f5f4f0}
+.metric .lbl{font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:#777;margin-top:1px}
+
+/* MAP */
+.map-wrap{position:relative;overflow:hidden}
+#map{width:100%;height:100%;background:#eee}
+
+.panel{position:absolute;background:var(--bg2);border:1px solid var(--border);border-radius:6px;
+  box-shadow:0 1px 4px rgba(0,0,0,.12);font-size:11px;z-index:500}
+.legend{top:10px;left:10px;padding:8px 10px;width:168px}
+.legend-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:6px}
+.legend-row{display:flex;align-items:center;gap:6px;padding:2px 0;cursor:pointer;user-select:none}
+.legend-row input{margin:0}
+.swatch{width:11px;height:11px;border-radius:2px;flex:none}
+.legend-hint{margin-top:6px;padding-top:6px;border-top:1px solid var(--border);color:var(--muted);font-size:10px;line-height:1.4}
+
+.confidence-note{bottom:10px;left:10px;padding:6px 9px;color:var(--muted);font-size:10px;max-width:260px;line-height:1.4}
+
+/* BOTTOM BAR */
+.bottombar{background:#1a1a18;color:#f5f4f0;grid-column:1/-1;display:flex;align-items:center;gap:14px;padding:0 16px}
+.play-btn{background:#2a2a26;border:1px solid #3a3a36;color:#f5f4f0;border-radius:5px;width:34px;height:34px;
+  font-size:13px;cursor:pointer;flex:none;display:flex;align-items:center;justify-content:center}
+.play-btn:hover{background:#333}
+.slider-wrap{flex:1;display:flex;flex-direction:column;gap:2px}
+.slider-wrap input[type=range]{width:100%;accent-color:var(--accent)}
+.month-label{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;min-width:74px;text-align:right}
+.tick-labels{display:flex;justify-content:space-between;font-size:9px;color:#777}
+
+.leaflet-popup-content{font-size:12px;line-height:1.5}
+.leaflet-popup-content b{display:block;margin-bottom:2px}
+.pop-row{color:#555}
+.pop-notes{margin-top:4px;padding-top:4px;border-top:1px solid #eee;color:#777;font-size:11px}
+.pop-tabs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid #eee}
+.pop-tab{border:1px solid var(--border);background:#f5f4f0;color:#555;border-radius:10px;padding:2px 8px;
+  font-size:10px;cursor:pointer;font-family:inherit}
+.pop-tab:hover{background:#ececec}
+.pop-tab.active{background:var(--accent);border-color:var(--accent);color:#fff}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">CTA Slow Zones, 2012-2026*</div>
+      <div class="topbar-sub">*Reliable data since 2014, intermittent data availability since 2004 &mdash; from FOIA 2024-0791 &amp; R2954, not a live tracker</div>
+    </div>
+    <div class="metrics">
+      <div class="metric"><div class="val" id="m-active">0</div><div class="lbl" id="m-active-lbl">Active</div></div>
+    </div>
+  </div>
+
+  <div class="map-wrap">
+    <div id="map"></div>
+    <div class="panel legend">
+      <div class="legend-title">Cause</div>
+      <div id="legend-rows"></div>
+      <div class="legend-hint">Line weight scales with how long the slow zone was active. Click a line for details.</div>
+    </div>
+    <div class="panel confidence-note">
+      Track placement is exact for most segments. Where the source data only identifies a branch and direction (not
+      which parallel track), the line is placed on the best-match track for that corridor.
+    </div>
+  </div>
+
+  <div class="bottombar">
+    <button class="play-btn" id="play-btn" title="Play">&#9654;</button>
+    <div class="slider-wrap">
+      <input type="range" id="month-slider" min="0" max="0" step="1" value="0">
+      <div class="tick-labels"><span id="tick-start"></span><span id="tick-end"></span></div>
+    </div>
+    <div class="month-label" id="month-label">-</div>
+  </div>
+</div>
+
+<script>
+const META = window.SZ_META;
+const LINES = window.SZ_LINES;
+const SEGMENTS = window.SZ_SEGMENTS;
+
+function monthLabel(idx){
+  const [ey, em] = META.month_epoch.split('-').map(Number);
+  const total = (ey*12 + (em-1)) + idx;
+  const y = Math.floor(total/12), m = total%12;
+  const names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return names[m] + ' ' + y;
+}
+
+const map = L.map('map', {zoomControl:true}).setView([41.88,-87.68], 10);
+L.tileLayer('https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png?key=cb1_2y7m_1_548aa4aac63350462978d1a1', {
+  attribution: '&copy; OpenStreetMap, &copy; CARTO', maxZoom: 19
+}).addTo(map);
+
+// Basemap: full system, always visible.
+const basemapLayer = L.geoJSON(LINES, {
+  style: f => ({
+    color: f.properties.is_connector ? '#c8c6c0' : '#a8a6a0',
+    weight: f.properties.is_connector ? 1.5 : 2.5,
+    opacity: f.properties.is_connector ? 0.5 : 0.8,
+  })
+}).addTo(map);
+try { map.fitBounds(basemapLayer.getBounds(), {padding:[20,20]}); } catch(e) {}
+
+// Pre-build every segment's polyline once; add/remove from the map as the
+// slider/filters change rather than recreating geometry every frame.
+const polylines = new Array(SEGMENTS.length).fill(null);
+SEGMENTS.forEach((seg, i) => {
+  if (!seg.geom_ok || !seg.geom || seg.geom.length < 2) return;
+  const duration = seg.end - seg.start + 1;
+  const weight = Math.max(3, Math.min(10, 3 + duration/12));
+  const latlngs = seg.geom.map(([lon,lat]) => [lat,lon]);
+  const pl = L.polyline(latlngs, {
+    color: META.category_colors[seg.cat],
+    weight: weight,
+    opacity: 0.85,
+    lineCap: 'round',
+  });
+  pl.on('click', e => {
+    L.DomEvent.stopPropagation(e);
+    const stack = [i, ...(overlapGroups[i] || [])].filter(j => activeSet.has(j));
+    stack.sort((a, b) => SEGMENTS[a].start - SEGMENTS[b].start);
+    openStack(stack, i, e.latlng);
+  });
+  polylines[i] = pl;
+});
+
+// Segments sharing the same branch+track with overlapping stationing are
+// the "same physical spot" -- e.g. repeat work orders reported against the
+// same rail. Grouped up front (static, independent of the slider) so a
+// click can offer every WO at that spot to tab through, not just the
+// topmost line Leaflet happened to hit.
+const overlapGroups = SEGMENTS.map(() => []);
+{
+  const byBranchTrack = new Map();
+  SEGMENTS.forEach((seg, i) => {
+    if (!seg.geom_ok || seg.st_a == null || seg.st_b == null) return;
+    const key = seg.br + '|' + seg.tr;
+    if (!byBranchTrack.has(key)) byBranchTrack.set(key, []);
+    byBranchTrack.get(key).push(i);
+  });
+  const rangeOf = seg => seg.st_a <= seg.st_b ? [seg.st_a, seg.st_b] : [seg.st_b, seg.st_a];
+  for (const idxs of byBranchTrack.values()) {
+    for (let a = 0; a < idxs.length; a++) {
+      const [lo1, hi1] = rangeOf(SEGMENTS[idxs[a]]);
+      for (let b = a + 1; b < idxs.length; b++) {
+        const i = idxs[a], j = idxs[b];
+        const [lo2, hi2] = rangeOf(SEGMENTS[j]);
+        if (lo1 <= hi2 && lo2 <= hi1) {
+          overlapGroups[i].push(j);
+          overlapGroups[j].push(i);
+        }
+      }
+    }
+  }
+}
+
+function popupHtml(seg){
+  const branchName = META.branch_names[seg.br] || seg.br;
+  const dateRange = monthLabel(seg.start) + ' – ' + (seg.end >= META.month_count-1 ? 'still open at data cutoff' : monthLabel(seg.end));
+  const woLine = seg.src === 'infor_only'
+    ? ('WO ' + seg.infor_wo + (seg.parent_wo && String(seg.parent_wo) !== seg.infor_wo ? (' (parent ' + seg.parent_wo + ')') : ''))
+    : ('Legacy WO ' + seg.wo + (seg.infor_wo ? (' (INFOR ' + seg.infor_wo + ')') : ''));
+  return (
+    '<b>' + branchName + ' &mdash; Track ' + (seg.tr || '?') + '</b>' +
+    '<div class="pop-row">' + woLine + '</div>' +
+    '<div class="pop-row">' + META.categories[seg.cat] + (seg.defect ? (' &mdash; ' + seg.defect) : '') + '</div>' +
+    '<div class="pop-row">' + dateRange + '</div>' +
+    (seg.sz_status ? ('<div class="pop-row">Status: ' + seg.sz_status + '</div>') : '') +
+    (seg.track_circuit ? ('<div class="pop-row">Circuit: ' + seg.track_circuit + '</div>') : '') +
+    (seg.len_ft ? ('<div class="pop-row">' + seg.len_ft + ' ft</div>') : '') +
+    (seg.geom_confidence === 'branch_only' ? '<div class="pop-row">Track placement approximate</div>' : '') +
+    (seg.notes ? ('<div class="pop-notes">' + String(seg.notes).replace(/</g,'&lt;') + '</div>') : '')
+  );
+}
+
+// --- Click-to-inspect: tab through stacked WOs at the same spot, and
+// highlight + zoom to whichever one is currently selected. ---
+let highlightLayer = null;
+let stackPopup = null;
+
+function clearHighlight(){
+  if (highlightLayer) { map.removeLayer(highlightLayer); highlightLayer = null; }
+}
+
+function highlightAndZoom(i){
+  clearHighlight();
+  const pl = polylines[i];
+  if (!pl) return;
+  highlightLayer = L.polyline(pl.getLatLngs(), {
+    color: '#111', weight: pl.options.weight + 8, opacity: 0.25, lineCap: 'round',
+  }).addTo(map);
+  highlightLayer.bringToBack();
+  basemapLayer.bringToBack();
+  pl.bringToFront();
+  map.fitBounds(pl.getBounds(), {padding: [60, 60], maxZoom: 17});
+}
+
+function openStack(members, selectedIdx, latlng){
+  if (members.length === 0) return;
+  const tabsHtml = members.length > 1
+    ? '<div class="pop-tabs">' + members.map(idx =>
+        '<button class="pop-tab' + (idx === selectedIdx ? ' active' : '') + '" data-idx="' + idx + '">WO ' +
+        (SEGMENTS[idx].infor_wo || SEGMENTS[idx].wo) + '</button>'
+      ).join('') + '</div>'
+    : '';
+  const html = '<div class="pop-wrap">' + tabsHtml + '<div class="pop-body">' + popupHtml(SEGMENTS[selectedIdx]) + '</div></div>';
+  if (!stackPopup) {
+    stackPopup = L.popup({maxWidth: 280, autoPanPadding: [40, 40]});
+    map.on('popupclose', e => { if (e.popup === stackPopup) clearHighlight(); });
+  }
+  stackPopup.setLatLng(latlng).setContent(html).openOn(map);
+  highlightAndZoom(selectedIdx);
+  setTimeout(() => {
+    const container = stackPopup.getElement();
+    if (!container) return;
+    container.querySelectorAll('.pop-tab').forEach(btn => {
+      btn.addEventListener('click', ev => {
+        ev.stopPropagation();
+        openStack(members, Number(btn.dataset.idx), latlng);
+      });
+    });
+  }, 0);
+}
+
+// --- Category filter state ---
+const activeCats = new Set(META.categories.map((_, i) => i));
+const legendRows = document.getElementById('legend-rows');
+META.categories.forEach((cat, i) => {
+  const row = document.createElement('label');
+  row.className = 'legend-row';
+  row.innerHTML = '<input type="checkbox" checked data-cat="' + i + '">' +
+    '<span class="swatch" style="background:' + META.category_colors[i] + '"></span>' + cat;
+  legendRows.appendChild(row);
+});
+legendRows.addEventListener('change', e => {
+  const cat = Number(e.target.dataset.cat);
+  if (e.target.checked) activeCats.add(cat); else activeCats.delete(cat);
+  render();
+});
+
+// --- Slider / month state, diff-based add/remove ---
+// Timeline is cropped to Jan 2014 onward (reliable-data start) even though
+// month_index (and any segment's start/end) is still computed from the full
+// 2004 epoch -- a segment that started earlier but is still active past the
+// crop point renders normally, only the scrub range is shortened.
+const TIMELINE_START_IDX = (2014 - 2004) * 12;
+const slider = document.getElementById('month-slider');
+slider.min = TIMELINE_START_IDX;
+slider.max = META.month_count - 1;
+slider.value = META.month_count - 1;
+document.getElementById('tick-start').textContent = monthLabel(TIMELINE_START_IDX);
+document.getElementById('tick-end').textContent = monthLabel(META.month_count - 1);
+
+let activeSet = new Set();
+let pending = false;
+
+function render(){
+  const m = Number(slider.value);
+  document.getElementById('month-label').textContent = monthLabel(m);
+  document.getElementById('m-active-lbl').textContent = 'Active (as of ' + monthLabel(m) + ')';
+
+  const newActive = new Set();
+  for (let i = 0; i < SEGMENTS.length; i++) {
+    const seg = SEGMENTS[i];
+    if (!polylines[i]) continue;
+    if (seg.start <= m && m <= seg.end && activeCats.has(seg.cat)) newActive.add(i);
+  }
+  for (const i of activeSet) if (!newActive.has(i)) map.removeLayer(polylines[i]);
+  for (const i of newActive) if (!activeSet.has(i)) polylines[i].addTo(map);
+  activeSet = newActive;
+  document.getElementById('m-active').textContent = activeSet.size.toLocaleString();
+}
+
+function scheduleRender(){
+  if (pending) return;
+  pending = true;
+  requestAnimationFrame(() => { pending = false; render(); });
+}
+
+slider.addEventListener('input', scheduleRender);
+render();
+
+// --- Play / auto-advance ---
+let playTimer = null;
+const playBtn = document.getElementById('play-btn');
+playBtn.addEventListener('click', () => {
+  if (playTimer) {
+    clearInterval(playTimer);
+    playTimer = null;
+    playBtn.innerHTML = '&#9654;';
+    return;
+  }
+  playBtn.innerHTML = '&#10074;&#10074;';
+  playTimer = setInterval(() => {
+    let m = Number(slider.value) + 1;
+    if (m > Number(slider.max)) m = TIMELINE_START_IDX;
+    slider.value = m;
+    scheduleRender();
+  }, 220);
+});
+</script>
+</body>
+</html>
